@@ -1,0 +1,7 @@
+{
+  "TechnicalQuality": [88, 90, 87, 89, 91],
+  "SurveyAccuracy": [15, 17, 14, 16, 18],
+  "EvidencValidity": [20, 22, 19, 21, 23],
+  "Compliance": [95, 96, 94, 97, 95],
+  "ReportingClarity": [5, 7, 4, 6, 8]
+}
