@@ -24,7 +24,9 @@ app.post("/evaluate-dpr", async (req, res) => {
     const pdfResp = await fetch(fileUrl).then((response) => response.arrayBuffer());
 
     const contents = [
-      { text: `You are an expert evaluator for the Ministry of Jal Shakti and Brahmaputra Board.  
+      { text: `
+        THE RESPONSE HAS TO BE A STRING THAT CAN BE 
+        You are an expert evaluator for the Ministry of Jal Shakti and Brahmaputra Board.  
 Your task is to read the following DPR (Detailed Project Report) content and evaluate it strictly on the basis of the 5 field-worker performance parameters.
 
 DPR CONTENT:
@@ -58,8 +60,6 @@ Example Output: (STRICT)
   "ReportingClarity": [65, 66, 67, 64, 68]
 }
 
-YOU MUST CHANGE THEN NAME OF THE PARAMETERS TO 
-
 Do NOT add comments, descriptions, reasoning, or text outside the above format.
 Return only the result.`},
       {
@@ -72,10 +72,50 @@ Return only the result.`},
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents
+      contents,
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "object",
+          properties: {
+            TechnicalQuality: {
+              type: "array",
+              items: { type: "number" }
+            },
+            SurveyAccuracy: {
+              type: "array",
+              items: { type: "number" }
+            },
+            EvidenceValidity: {
+              type: "array",
+              items: { type: "number" }
+            },
+            Compliance: {
+              type: "array",
+              items: { type: "number" }
+            },
+            ReportingClarity: {
+              type: "array",
+              items: { type: "number" }
+            }
+          },
+          required: [
+            "TechnicalQuality",
+            "SurveyAccuracy",
+            "EvidenceValidity",
+            "Compliance",
+            "ReportingClarity"
+          ]
+        }
+      }
     });
 
-    const resData = JSON.parse(response.text);
+    let responseText = response.text;
+    
+    // Remove markdown code fences if present
+    responseText = responseText.replace(/^```json\s*/g, '').replace(/```\s*$/g, '').trim();
+    
+    const resData = JSON.parse(responseText);
     
     res.json(resData);
   } catch (error) {
